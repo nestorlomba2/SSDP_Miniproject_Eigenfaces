@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 import os
 
@@ -8,7 +8,6 @@ def load_images(dataset):
     labels = []
 
     if dataset == "YaleB":
-        img_size = (192, 168)
         for filename in os.listdir("data/YaleB"):
             file_path = os.path.join("data/YaleB", filename)
             with Image.open(file_path) as img:
@@ -37,6 +36,25 @@ def load_images(dataset):
                 # Extract '01' from 'yaleB01', which is the subject ID
                 label = "_".join(filename.split('.')[0].split('_')[:-1])
                 labels.append(label)
+
+        # Convert lists to numpy arrays
+        image_matrix = np.array(flattened_images)
+        label_array = np.array(labels)
+        img_size = img.size
+    elif dataset == "vggface2_224":
+        NUMBER_OF_PEOPLE = 20
+        for person_count, person_folder in enumerate(os.listdir("data/vggface2_224")):
+            if person_count == NUMBER_OF_PEOPLE:
+                break
+            for filename in os.listdir(f"data/vggface2_224/{person_folder}"):
+                file_path = os.path.join(f"data/vggface2_224/{person_folder}", filename)
+                with Image.open(file_path) as img:
+                    flattened_img = np.array(ImageOps.grayscale(img)).flatten()
+                    flattened_images.append(flattened_img)
+                    label = person_folder
+                    labels.append(label)
+            print(f"Loaded: {person_folder}")
+            
 
         # Convert lists to numpy arrays
         image_matrix = np.array(flattened_images)
